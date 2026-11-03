@@ -11,7 +11,7 @@ export type LoginState =
 const emailSchema = z.email("Enter a valid email address.");
 const codeSchema = z
   .string()
-  .regex(/^\d{6}$/, "Enter the 6-digit code from the email.");
+  .regex(/^\d{6,10}$/, "Enter the code from the email.");
 
 // Investors are created by the WordPress sync (step 4). Until then, new emails
 // may sign up so the app can be tested; flip to false when the sync is live.

@@ -396,7 +396,7 @@ export function WithdrawFlow({
                   name="code"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  maxLength={6}
+                  maxLength={10}
                   placeholder="••••••"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
@@ -440,7 +440,7 @@ export function WithdrawFlow({
         ) : codeSent ? (
           <Button
             onClick={submit}
-            disabled={pending || !confirmed || code.length !== 6}
+            disabled={pending || !confirmed || code.length < 6}
             className="flex-1 uppercase"
           >
             {pending ? "Sending…" : "Send request"}

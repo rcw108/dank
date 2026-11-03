@@ -51,7 +51,8 @@ export const withdrawalSchema = z.object({
     true,
     "Confirm that the amount and details are correct.",
   ),
-  code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code from the email."),
+  // Supabase "Email OTP Length" is configurable (6–10 digits).
+  code: z.string().regex(/^\d{6,10}$/, "Enter the code from the email."),
 });
 
 export type WithdrawalRequest = z.infer<typeof withdrawalSchema>;

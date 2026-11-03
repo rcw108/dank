@@ -66,7 +66,7 @@ function CodeForm({
   return (
     <div className="flex flex-col gap-6">
       <p className="text-muted">
-        We sent a 6-digit code to{" "}
+        We sent a code to{" "}
         <span className="font-medium text-fg">{email}</span>. It expires in 10
         minutes.
       </p>
@@ -77,8 +77,8 @@ function CodeForm({
             name="code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="\d{6}"
-            maxLength={6}
+            pattern="\d{6,10}"
+            maxLength={10}
             placeholder="••••••"
             error={state.error}
             className="tracking-[0.5em]"
