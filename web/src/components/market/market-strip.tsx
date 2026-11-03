@@ -4,7 +4,7 @@ import { TradingViewWidget } from "./tradingview-widget";
 /** Both TradingView strips from the site account, stacked as on dank.capital. */
 export function MarketStrip() {
   return (
-    <div className="border-y border-line bg-ink/80 backdrop-blur-sm">
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
       <TradingViewWidget
         kind="tickers"
         symbols={MARKET_OVERVIEW}

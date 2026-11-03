@@ -1,34 +1,74 @@
 @import "tailwindcss";
 
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
 /*
- * DANK Capital brand tokens, taken from dank.capital (Elementor + theme CSS).
- * Keep this the single source of truth for colors; components use the
- * Tailwind names below (bg-navy, text-teal, border-line, …), never raw hex.
+ * DANK Capital design tokens, taken from dank.capital (Elementor + theme CSS).
+ * Components use the semantic names (bg-bg, bg-surface, text-fg, text-accent…),
+ * never raw hex, so the light theme below is a pure token swap.
+ *
+ * Dark (default) = the site: navy #0D232B, ink cards #141A27, teal #45C7AD,
+ * crest gold #DAAF64. #FF3C00 is the site account's colour for withdrawals.
  */
 @theme {
-  --color-navy: #0d232b; /* main background */
-  --color-navy-deep: #0d2129; /* alternate sections */
-  --color-ink: #141a27; /* cards, phone surfaces */
-  --color-panel: #23323b; /* raised panels, inputs */
-  --color-line: #2a4544; /* hairlines and borders */
-  --color-teal: #45c7ad; /* primary accent, CTAs */
-  --color-gold: #daaf64; /* crest gold, secondary accent */
-  --color-gold-light: #f5c270;
-  --color-danger: #ff3c00; /* site's global accent, used for errors */
+  --color-bg: #0d232b;
+  --color-bg-alt: #0d2129;
+  --color-surface: #141a27;
+  --color-raised: #23323b;
+  --color-line: #2a4544;
+  --color-fg: #ffffff;
   --color-muted: rgb(255 255 255 / 0.64);
+  --color-faint: rgb(255 255 255 / 0.4);
+  --color-accent: #45c7ad;
+  --color-on-accent: #0d232b;
+  --color-gold: #daaf64;
+  --color-negative: #ff3c00;
+  --color-scrim: rgb(13 35 43 / 0.88);
 
   --font-sans: var(--font-poppins), system-ui, sans-serif;
   --font-display: var(--font-sora), var(--font-poppins), sans-serif;
 
   --radius-pill: 999px;
-  --radius-card: 14px;
+  --radius-card: 18px;
+  --radius-field: 12px;
+
+  --animate-rise: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* Light theme: same brand, daylight surfaces. Toggled from Settings. */
+[data-theme="light"] {
+  --color-bg: #f2f5f5;
+  --color-bg-alt: #e8eeee;
+  --color-surface: #ffffff;
+  --color-raised: #eef2f2;
+  --color-line: #d3dddd;
+  --color-fg: #0d232b;
+  --color-muted: rgb(13 35 43 / 0.66);
+  --color-faint: rgb(13 35 43 / 0.42);
+  --color-accent: #23917c;
+  --color-on-accent: #ffffff;
+  --color-gold: #a5793a;
+  --color-negative: #d93400;
+  --color-scrim: rgb(242 245 245 / 0.9);
 }
 
 @layer base {
   html {
-    background-color: var(--color-navy);
-    color: #fff;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    color-scheme: dark;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
   }
 
   body {
@@ -40,11 +80,40 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-teal);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Statement page prints as a clean document on white. */
+@media print {
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0d232b !important;
   }
 }

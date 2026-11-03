@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins, Sora } from "next/font/google";
+import { ThemeScript } from "@/components/theme/theme-script";
 import "./globals.css";
 
 // Same families as dank.capital: Sora for headings, Poppins for body text.
@@ -31,7 +32,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0d232b",
-  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -42,10 +42,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${sora.variable} ${poppins.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-navy text-white">
-        {children}
-      </body>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="flex min-h-full flex-col bg-bg text-fg">{children}</body>
     </html>
   );
 }

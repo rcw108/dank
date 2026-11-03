@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { TickerSymbol } from "@/lib/market/symbols";
+import { useResolvedTheme } from "@/components/theme/use-theme";
 
 type WidgetKind = "tickers" | "ticker-tape";
 
@@ -10,7 +11,6 @@ type Props = {
   symbols: TickerSymbol[];
   /** Reserved height prevents layout shift while the iframe loads. */
   height: number;
-  colorTheme?: "dark" | "light";
   label: string;
 };
 
@@ -20,18 +20,14 @@ type Props = {
  * be appended inside the container at runtime rather than via next/script.
  * Loading is deferred until after hydration so it never blocks the account data.
  */
-export function TradingViewWidget({
-  kind,
-  symbols,
-  height,
-  colorTheme = "dark",
-  label,
-}: Props) {
+export function TradingViewWidget({ kind, symbols, height, label }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // Follows the app theme, so the widget re-renders on a theme switch.
+  const colorTheme = useResolvedTheme();
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !colorTheme) return;
 
     const script = document.createElement("script");
     script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${kind}.js`;
