@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DANK Capital — мобильное приложение для инвесторов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D232B;
+    --navy-deep: #0D2129;
+    --ink: #141A27;
+    --panel: #23323B;
+    --line: #2A4544;
+    --teal: #45C7AD;
+    --gold: #DAAF64;
+    --white: #FFFFFF;
+    --muted: rgba(255, 255, 255, 0.64);
+    --radius-pill: 999px;
+    --radius-card: 14px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--navy);
+    color: var(--white);
+    font: 300 16px/1.7 "Poppins", system-ui, sans-serif;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: var(--teal); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+
+  h1, h2, h3 { font-family: "Sora", sans-serif; font-weight: 700; line-height: 1.2; margin: 0; }
+  h1 { font-size: clamp(2rem, 5vw, 3.4rem); }
+  h2 { font-size: clamp(1.6rem, 3.4vw, 2.25rem); }
+  h3 { font-size: 1.125rem; font-weight: 600; }
+  p { margin: 0; }
+
+  /* The short teal bar under centered headings is the site's own signature mark */
+  .bar { width: 34px; height: 3px; background: var(--teal); margin: 18px auto 0; border: 0; }
+  .bar.left { margin-left: 0; }
+
+  .wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+  section { padding: clamp(64px, 9vw, 112px) 0; }
+  .lead { color: var(--muted); max-width: 62ch; margin-top: 22px; }
+  .center { text-align: center; }
+  .center .lead { margin-inline: auto; }
+
+  /* Header */
+  .top {
+    position: absolute; inset: 0 0 auto 0; z-index: 2;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px clamp(20px, 4vw, 48px);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(255,255,255,.35); border-radius: var(--radius-pill);
+    padding: 9px 20px; font: 500 .8rem/1 "Poppins", sans-serif; letter-spacing: .04em;
+    color: var(--white); text-decoration: none; text-transform: uppercase;
+  }
+  .top .logo { width: 84px; }
+  .top .meta { color: var(--muted); font-size: .85rem; }
+
+  /* Hero */
+  .hero {
+    position: relative; min-height: min(92vh, 860px); display: grid; place-items: center;
+    text-align: center; padding: 140px 20px 90px; isolation: isolate;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: -2;
+    background: url("assets/hall.jpg") center / cover no-repeat;
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(180deg, rgba(13,35,43,.82) 0%, rgba(13,35,43,.9) 60%, var(--navy) 100%);
+  }
+  .hero .lead { margin-top: 26px; font-size: 1.05rem; }
+  .hero .crest { width: 132px; margin: 0 auto 34px; filter: drop-shadow(0 10px 30px rgba(0,0,0,.5)); }
+
+  /* Promise: one concrete sentence from the investor's point of view */
+  .promise { background: var(--navy-deep); }
+  .promise-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
+  .phone {
+    justify-self: center; width: 270px; aspect-ratio: 9 / 19; border-radius: 40px;
+    background: var(--ink); border: 1px solid var(--line); padding: 18px 16px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 0 0 6px #0A1219;
+    display: flex; flex-direction: column; gap: 12px; font-size: .78rem;
+  }
+  .phone .p-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 6px 4px; }
+  .phone .p-head img { width: 34px; }
+  .phone .p-head span { color: var(--muted); }
+  .phone .p-total { background: url("assets/grid.jpg") center / cover; border-radius: 16px; padding: 18px 16px; border: 1px solid var(--line); }
+  .phone .p-total small { color: var(--muted); display: block; }
+  .phone .p-total strong { font: 700 1.6rem/1.2 "Sora", sans-serif; display: block; margin-top: 4px; }
+  .phone .p-total em { font-style: normal; color: var(--teal); }
+  .phone .p-row { display: flex; justify-content: space-between; padding: 10px 6px; border-bottom: 1px solid var(--line); }
+  .phone .p-row span:last-child { font-weight: 500; }
+  .phone .p-btn { margin-top: auto; text-align: center; border-radius: var(--radius-pill); background: var(--teal); color: var(--ink); padding: 11px; font-weight: 500; }
+  .phone .p-tabs { display: flex; justify-content: space-around; color: var(--muted); padding-top: 6px; border-top: 1px solid var(--line); }
+  .phone .p-tabs b { color: var(--teal); font-weight: 500; }
+
+  /* Screens list */
+  .screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius-card); overflow: hidden; margin-top: 48px; }
+  .screens div { background: var(--navy); padding: 26px 24px; box-shadow: 0 0 0 .5px var(--line); }
+  .screens p { color: var(--muted); margin-top: 8px; font-size: .94rem; }
+  .note { color: var(--muted); font-size: .9rem; margin-top: 22px; }
+
+  /* Data flow */
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0; margin-top: 52px; }
+  .node { border: 1px solid var(--line); border-radius: var(--radius-card); padding: 26px 22px; background: var(--navy-deep); }
+  .node h3 { margin-bottom: 10px; }
+  .node p { color: var(--muted); font-size: .92rem; }
+  .node.core { border-color: var(--teal); }
+  .arrow { display: grid; place-items: center; padding: 0 14px; color: var(--teal); }
+  .arrow svg { width: 40px; height: 14px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 44px; }
+  .facts p { color: var(--muted); font-size: .94rem; margin-top: 6px; }
+
+  /* Security */
+  .security { background: var(--ink); }
+  .sec-grid { display: grid; grid-template-columns: 300px 1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
+  .sec-grid .crest { width: 100%; max-width: 280px; opacity: .92; }
+  .sec-list { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 18px; }
+  .sec-list li { padding-left: 22px; position: relative; }
+  .sec-list li::before { content: ""; position: absolute; left: 0; top: .72em; width: 10px; height: 2px; background: var(--gold); }
+  .sec-list strong { font-weight: 500; }
+  .sec-list span { color: var(--muted); }
+
+  /* Stages — a real sequence, so numbers carry meaning here */
+  .stages { list-style: none; margin: 48px 0 0; padding: 0; counter-reset: st; }
+  .stages li { counter-increment: st; display: grid; grid-template-columns: 64px 1fr 1fr; gap: 24px; padding: 26px 0; border-top: 1px solid var(--line); }
+  .stages li:last-child { border-bottom: 1px solid var(--line); }
+  .stages li::before { content: counter(st); font: 700 1.6rem/1 "Sora", sans-serif; color: var(--teal); }
+  .stages p { color: var(--muted); font-size: .94rem; }
+  .stages .result { color: var(--white); font-size: .94rem; }
+  .stages .result small { display: block; color: var(--gold); font-size: .8rem; margin-bottom: 4px; }
+  .phase { font: 600 .95rem/1 "Sora", sans-serif; color: var(--gold); margin-top: 40px; }
+
+  /* Install compare */
+  .compare { width: 100%; border-collapse: collapse; margin-top: 44px; font-size: .95rem; }
+  .compare th, .compare td { text-align: left; padding: 16px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .compare th { font: 600 .95rem "Sora", sans-serif; }
+  .compare td:first-child { color: var(--muted); width: 30%; }
+
+  /* Needs */
+  .needs { background: var(--navy-deep); }
+  .need-list { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-card); overflow: hidden; }
+  .need-list li { background: var(--navy-deep); padding: 24px; }
+  .need-list p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
+  .when { display: inline-block; margin-top: 12px; font-size: .78rem; color: var(--teal); border: 1px solid rgba(69,199,173,.4); border-radius: var(--radius-pill); padding: 3px 12px; }
+
+  .callout { margin-top: 40px; border-left: 3px solid var(--gold); padding: 18px 22px; background: rgba(218,175,100,.06); border-radius: 0 var(--radius-card) var(--radius-card) 0; }
+  .callout p + p { margin-top: 10px; }
+  .callout p { color: var(--muted); font-size: .94rem; }
+  .callout strong { color: var(--white); font-weight: 500; }
+
+  footer { padding: 48px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; }
+  footer img { width: 54px; }
+
+  @media (max-width: 860px) {
+    .promise-grid, .sec-grid { grid-template-columns: 1fr; }
+    .sec-grid .crest { max-width: 180px; margin-inline: auto; }
+    .flow { grid-template-columns: 1fr; }
+    .arrow { padding: 10px 0; }
+    .arrow svg { transform: rotate(90deg); }
+    .facts { grid-template-columns: 1fr; }
+    .stages li { grid-template-columns: 44px 1fr; }
+    .stages .result { grid-column: 2; }
+    .need-list { grid-template-columns: 1fr; }
+    .top .meta { display: none; }
+  }
+  @media print {
+    .hero { min-height: auto; }
+    section { padding: 40px 0; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <img class="logo" src="assets/logo.png" alt="DANK Capital">
+  <span class="meta">Проектная документация, версия 1.0 · ноябрь 2026</span>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <img class="crest" src="assets/crest.png" alt="">
+      <h1>Личный кабинет DANK Capital<br>в телефоне инвестора</h1>
+      <hr class="bar">
+      <p class="lead">Приложение для iPhone и Android с теми же данными, что и в личном кабинете на dank.capital. Инвестор входит один раз, а портфель, доходность и заявки всегда под рукой. Сайт и административная часть продолжают работать как прежде.</p>
+    </div>
+  </section>
+
+  <section class="promise">
+    <div class="wrap promise-grid">
+      <div>
+        <h2>Что получает инвестор</h2>
+        <hr class="bar left">
+        <p class="lead">Всё, что инвестор видит в кабинете на сайте, появляется в приложении, оформленном в фирменном стиле DANK Capital: те же цвета, шрифты, герб и изображения.</p>
+        <p class="lead">Когда менеджер обновляет данные инвестора в админке сайта, через несколько секунд они меняются и в приложении. Вносить данные дважды не нужно.</p>
+      </div>
+      <div class="phone" aria-hidden="true">
+        <div class="p-head"><img src="assets/logo.png" alt=""><span>Обзор</span></div>
+        <div class="p-total"><small>Капитал под управлением</small><strong>$ 125 400</strong><em>+ 10,2% годовых, USD</em></div>
+        <div class="p-row"><span>Инвестиции</span><span>3 активные</span></div>
+        <div class="p-row"><span>Доход за месяц</span><span>$ 1 045</span></div>
+        <div class="p-row"><span>Уровень</span><span>Diamond</span></div>
+        <div class="p-btn">Запросить вывод средств</div>
+        <div class="p-tabs"><b>Обзор</b><span>Инвестиции</span><span>Профиль</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Экраны приложения</h2>
+      <hr class="bar left">
+      <p class="lead">Набор экранов повторяет разделы личного кабинета на сайте. Мобильная версия получает навигацию, удобную для пальца, и крупные цифры.</p>
+      <div class="screens">
+        <div><h3>Вход</h3><p>Email и одноразовый код из письма. В версии для магазинов добавится вход по Face ID или отпечатку пальца.</p></div>
+        <div><h3>Обзор инвестора</h3><p>Общий капитал, доходность, ключевые показатели. Это первый экран после входа.</p></div>
+        <div><h3>Инвестиции</h3><p>Список вложений: суммы, сроки, условия и история начислений.</p></div>
+        <div><h3>Вывод средств</h3><p>Отправка заявки на вывод и статус уже поданных заявок.</p></div>
+        <div><h3>Реферальная программа</h3><p>Приглашённые инвесторы, даты и начисления по рефералам.</p></div>
+        <div><h3>Профиль и уровень</h3><p>Личные данные, текущий уровень инвестора и его условия.</p></div>
+        <div><h3>Поддержка и FAQ</h3><p>Ответы на частые вопросы и быстрая связь с командой DANK Capital.</p></div>
+      </div>
+      <p class="note">Окончательный состав экранов и полей сверим по тестовой учётной записи инвестора на сайте до начала работы над интерфейсом.</p>
+    </div>
+  </section>
+
+  <section style="background: var(--navy-deep)">
+    <div class="wrap">
+      <div class="center">
+        <h2>Как данные попадают в приложение</h2>
+        <hr class="bar">
+        <p class="lead">Сайт остаётся главным местом, где команда ведёт данные инвесторов. Приложение получает их из защищённой облачной базы, которую сайт автоматически держит в актуальном состоянии.</p>
+      </div>
+
+      <div class="flow">
+        <div class="node">
+          <h3>Сайт dank.capital</h3>
+          <p>Менеджер, как и сейчас, работает с инвестором в админке WordPress. Небольшой плагин замечает любое изменение данных.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 40 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M0 7h37M31 1l6 6-6 6"/></svg></div>
+        <div class="node core">
+          <h3>Облачная база Supabase</h3>
+          <p>Принимает только подписанные сайтом обновления и хранит актуальную копию данных каждого инвестора.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 40 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M0 7h37M31 1l6 6-6 6"/></svg></div>
+        <div class="node">
+          <h3>Приложение</h3>
+          <p>Показывает инвестору только его собственные данные. Последние загруженные данные остаются доступны и без интернета.</p>
+        </div>
+      </div>
+
+      <div class="facts">
+        <div><h3>Обновление за секунды</h3><p>Изменение в админке сайта отправляется сразу после сохранения.</p></div>
+        <div><h3>Ничего не теряется</h3><p>Если связь прервалась, сайт повторит отправку. Раз в сутки база дополнительно сверяется с сайтом.</p></div>
+        <div><h3>Перенос всех инвесторов</h3><p>Перед запуском все текущие учётные записи и их данные переносятся одним действием.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="security">
+    <div class="wrap sec-grid">
+      <img class="crest" src="assets/crest.png" alt="Герб DANK Capital">
+      <div>
+        <h2>Безопасность</h2>
+        <hr class="bar left">
+        <ul class="sec-list">
+          <li><strong>Каждый видит только своё.</strong> <span>Доступ ограничен на уровне базы данных: даже при ошибке в приложении один инвестор не получит данные другого.</span></li>
+          <li><strong>Пароли не копируются.</strong> <span>Вход выполняется по одноразовому коду, отправленному на email инвестора. Пароли с сайта никуда не передаются.</span></li>
+          <li><strong>Подписанная передача.</strong> <span>База принимает обновления только с цифровой подписью сайта, все соединения зашифрованы.</span></li>
+          <li><strong>Одностороннее направление.</strong> <span>На первом этапе приложение только показывает данные, а изменить их можно только через админку сайта.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Этапы работы</h2>
+      <hr class="bar left">
+      <p class="lead">Работа идёт в два этапа. После первого у вас будет рабочее приложение по ссылке для показа и тестирования. Второй этап — публикация в App Store и Google Play.</p>
+
+      <p class="phase">Этап 1. Веб-приложение для показа</p>
+      <ol class="stages">
+        <li><div><h3>Фундамент проекта</h3><p>Каркас приложения, репозиторий, фирменные цвета и шрифты.</p></div><div class="result"><small>Результат</small>Проект собран и хранится в репозитории</div></li>
+        <li><div><h3>База данных и вход</h3><p>Облачная база, структура данных инвестора, вход по коду из email.</p></div><div class="result"><small>Результат</small>Тестовый инвестор может войти в приложение</div></li>
+        <li><div><h3>Связь с сайтом</h3><p>Плагин для WordPress, автоматическая передача изменений, перенос всех инвесторов.</p></div><div class="result"><small>Результат</small>Изменение в админке видно в приложении</div></li>
+        <li><div><h3>Экраны кабинета</h3><p>Обзор, инвестиции, вывод средств, рефералы, профиль, поддержка.</p></div><div class="result"><small>Результат</small>Мобильный кабинет со всеми разделами</div></li>
+        <li><div><h3>Установка и работа без сети</h3><p>Значок на главном экране, запуск без браузерной строки, доступ к последним данным без интернета.</p></div><div class="result"><small>Результат</small>Ссылка для показа и тестирования</div></li>
+      </ol>
+
+      <p class="phase">Этап 2. Публикация в магазинах приложений</p>
+      <ol class="stages" style="counter-reset: st 5">
+        <li><div><h3>Нативные версии</h3><p>Сборки для iOS и Android, заставка, иконки, вход по Face ID и отпечатку пальца, push-уведомления.</p></div><div class="result"><small>Результат</small>Приложение работает на устройствах тестировщиков</div></li>
+        <li><div><h3>Публикация</h3><p>Описания и скриншоты для магазинов, прохождение проверки Apple и Google.</p></div><div class="result"><small>Результат</small>Приложение доступно в App Store и Google Play</div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section style="background: var(--navy-deep)">
+    <div class="wrap">
+      <h2>Веб-версия и версия из магазина</h2>
+      <hr class="bar left">
+      <table class="compare">
+        <thead><tr><th scope="col"></th><th scope="col">Веб-приложение (этап 1)</th><th scope="col">App Store и Google Play (этап 2)</th></tr></thead>
+        <tbody>
+          <tr><td>Как установить</td><td>Открыть ссылку и нажать «На экран „Домой“»</td><td>Скачать из магазина</td></tr>
+          <tr><td>Данные инвестора</td><td>Те же</td><td>Те же</td></tr>
+          <tr><td>Обновления</td><td>Сразу у всех, без проверки магазинами</td><td>Интерфейс обновляется сразу, нативная часть — через магазин</td></tr>
+          <tr><td>Face ID и отпечаток</td><td>—</td><td>Да</td></tr>
+          <tr><td>Push-уведомления</td><td>Android полностью, iPhone после установки на экран «Домой»</td><td>Да, на всех устройствах</td></tr>
+          <tr><td>Сроки появления</td><td>Сразу после этапа 1</td><td>После проверки Apple и Google</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="needs">
+    <div class="wrap">
+      <h2>Что нужно от вас</h2>
+      <hr class="bar left">
+      <ul class="need-list">
+        <li><h3>Тестовый инвестор на сайте</h3><p>Учётная запись с заполненными данными, чтобы мы видели кабинет глазами инвестора.</p><span class="when">Нужно сейчас</span></li>
+        <li><h3>Доступ к админке WordPress</h3><p>Желательно к тестовой копии сайта (staging), чтобы установить и проверить плагин без риска для рабочего сайта.</p><span class="when">Нужно сейчас</span></li>
+        <li><h3>Подтверждение списка экранов</h3><p>Какие разделы кабинета нужны в приложении в первую очередь.</p><span class="when">До экранов кабинета</span></li>
+        <li><h3>Тексты для поддержки</h3><p>Контакты, часы работы, актуальные ответы FAQ.</p><span class="when">До экранов кабинета</span></li>
+        <li><h3>Аккаунт Apple Developer на компанию</h3><p>Регистрация на юридическое лицо с номером D-U-N-S, 99 USD в год. Оформление занимает от одной до двух недель, поэтому лучше начать заранее.</p><span class="when">До этапа 2</span></li>
+        <li><h3>Аккаунт Google Play Console на компанию</h3><p>Организационный аккаунт, единоразовый взнос 25 USD, проверка документов компании.</p><span class="when">До этапа 2</span></li>
+      </ul>
+
+      <div class="callout">
+        <p><strong>Почему аккаунты нужны именно на компанию.</strong> Apple и Google относят приложения инвестиционных компаний к финансовым сервисам. Такие приложения можно публиковать только от имени юридического лица, которое оказывает эти услуги. С личного аккаунта разработчика приложение не пройдёт проверку.</p>
+        <p>Для магазинов также понадобятся актуальная политика конфиденциальности (на сайте она уже есть) и возможность удалить учётную запись прямо в приложении. Это обязательное требование Apple, и мы заложим его в план.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="assets/logo.png" alt="DANK Capital">
+    <span>Документ для DANK Capital. Подготовлен командой разработки приложения.</span>
+  </div>
+</footer>
+
+</body>
+</html>

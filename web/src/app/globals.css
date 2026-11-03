@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/*
+ * DANK Capital brand tokens, taken from dank.capital (Elementor + theme CSS).
+ * Keep this the single source of truth for colors; components use the
+ * Tailwind names below (bg-navy, text-teal, border-line, …), never raw hex.
+ */
+@theme {
+  --color-navy: #0d232b; /* main background */
+  --color-navy-deep: #0d2129; /* alternate sections */
+  --color-ink: #141a27; /* cards, phone surfaces */
+  --color-panel: #23323b; /* raised panels, inputs */
+  --color-line: #2a4544; /* hairlines and borders */
+  --color-teal: #45c7ad; /* primary accent, CTAs */
+  --color-gold: #daaf64; /* crest gold, secondary accent */
+  --color-gold-light: #f5c270;
+  --color-danger: #ff3c00; /* site's global accent, used for errors */
+  --color-muted: rgb(255 255 255 / 0.64);
+
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-poppins), sans-serif;
+
+  --radius-pill: 999px;
+  --radius-card: 14px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-navy);
+    color: #fff;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-weight: 300;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-teal);
+    outline-offset: 3px;
+  }
+}
