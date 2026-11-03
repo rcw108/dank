@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app/page-header";
-import { DEMO_CODE, DEMO_MODE } from "@/lib/auth/demo";
 import { getAccount } from "@/lib/data/account";
 import { WithdrawFlow } from "./withdraw-flow";
 
@@ -34,7 +33,6 @@ async function Withdraw() {
       minimumBalance={rules.minimumBalance}
       cardDailyLimit={rules.cardDailyLimit}
       email={profile.email}
-      demoCode={DEMO_MODE ? DEMO_CODE : null}
     />
   );
 }

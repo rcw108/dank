@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "../../../public/brand/logo.png";
 import { BrandBackdrop } from "@/components/app/brand-backdrop";
-import { DEMO_CODE, DEMO_MODE } from "@/lib/auth/demo";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Log in" };
@@ -23,7 +22,7 @@ export default function LoginPage() {
           aria-hidden
           className="mx-auto mt-4 mb-8 block h-[3px] w-[34px] bg-accent"
         />
-        <LoginForm demoCode={DEMO_MODE ? DEMO_CODE : null} />
+        <LoginForm />
       </div>
 
       <p className="mx-auto mt-auto max-w-sm pt-10 text-center text-xs text-faint">

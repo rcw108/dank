@@ -1,9 +1,14 @@
-"""End-to-end smoke test of the investor app (demo auth).
+"""End-to-end smoke test of the investor app.
 
-Run from the repo root:
+Login uses real Supabase email codes, so the signed-in part runs from a saved
+browser session. Create it once (a browser opens; log in with your email):
+  python web/tests/e2e/save_session.py
+
+Then run from the repo root:
   python skills/webapp-testing/scripts/with_server.py \
     --server "cd web && exec npx next start -p 3123" --port 3123 \
     -- python web/tests/e2e/smoke.py
+Without a saved session only the guest and login-form checks run.
 """
 
 import os
@@ -13,6 +18,7 @@ import sys
 from playwright.sync_api import expect, sync_playwright
 
 BASE = os.environ.get("BASE_URL", "http://localhost:3123")
+STATE = os.path.join(os.path.dirname(__file__), ".auth", "session.json")
 OUT = os.path.join(os.path.dirname(__file__), "..", "screenshots")
 os.makedirs(OUT, exist_ok=True)
 errors: list[str] = []
@@ -36,26 +42,34 @@ with sync_playwright() as p:
     expect(guest).to_have_url(re.compile(r"/login$"))
     guest.close()
 
+    # Login form validates before contacting Supabase.
+    login = browser.new_page(viewport={"width": 390, "height": 844})
+    login.goto(BASE)
+    shot(login, "01-welcome")
+    login.get_by_role("link", name="Log in").click()
+    expect(login).to_have_url(re.compile(r"/login$"))
+    login.get_by_label("Email").fill("not-an-email")
+    login.get_by_role("button", name="Send code").click()
+    expect(login.get_by_text("Enter a valid email address.")).to_be_visible()
+    shot(login, "02-login")
+    login.close()
+
+    if not os.path.exists(STATE):
+        print("No saved session: skipped signed-in checks (run save_session.py).")
+        browser.close()
+        sys.exit(0)
+
     ctx = browser.new_context(
-        viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True
+        storage_state=STATE,
+        viewport={"width": 390, "height": 844},
+        device_scale_factor=2,
+        is_mobile=True,
+        has_touch=True,
     )
     page = ctx.new_page()
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "tradingview" not in m.text.lower() else None)
     page.on("pageerror", lambda e: errors.append(str(e)))
-
-    # Welcome → login with email + 6-digit code.
     page.goto(BASE)
-    shot(page, "01-welcome")
-    page.get_by_role("link", name="Log in").click()
-    expect(page).to_have_url(re.compile(r"/login$"))
-    page.get_by_label("Email").fill("investor@example.com")
-    page.get_by_role("button", name="Send code").click()
-    page.get_by_label("One-time code").fill("000000")
-    page.get_by_role("button", name="Log in").click()
-    expect(page.get_by_text("That code didn't work")).to_be_visible()
-    shot(page, "02-login-code")
-    page.get_by_label("One-time code").fill("123456")
-    page.get_by_role("button", name="Log in").click()
     expect(page).to_have_url(re.compile(r"/overview$"))
 
     # Overview: capital, summary, tickers.
@@ -96,12 +110,8 @@ with sync_playwright() as p:
     page.get_by_role("button", name="Continue").click()
     expect(page.get_by_text("•••• 6789")).to_be_visible()
     page.get_by_label("The amount and payout details are correct.").check()
-    page.get_by_role("button", name="Email me a code").click()
-    page.get_by_label(re.compile("Code sent to")).fill("123456")
+    expect(page.get_by_role("button", name="Email me a code")).to_be_enabled()
     shot(page, "07-withdraw-review")
-    page.get_by_role("button", name="Send request").click()
-    expect(page.get_by_role("heading", name="Request sent")).to_be_visible()
-    shot(page, "08-withdraw-done")
 
     # Statement.
     page.goto(f"{BASE}/statement")
@@ -124,10 +134,7 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/settings")
     page.get_by_role("radio", name="Dark").click()
 
-    page.get_by_role("button", name="Log out").click()
-    expect(page).to_have_url(re.compile(r"/login$"))
-    page.goto(f"{BASE}/overview")
-    expect(page).to_have_url(re.compile(r"/login$"))
+    expect(page.get_by_role("button", name="Log out")).to_be_visible()
 
     browser.close()
 

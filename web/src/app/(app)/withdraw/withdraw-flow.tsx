@@ -18,7 +18,6 @@ type Props = {
   minimumBalance: number;
   cardDailyLimit: number;
   email: string;
-  demoCode: string | null;
 };
 
 type Details = Record<string, string>;
@@ -32,7 +31,6 @@ export function WithdrawFlow({
   minimumBalance,
   cardDailyLimit,
   email,
-  demoCode,
 }: Props) {
   const [step, setStep] = useState(0);
   const [amount, setAmount] = useState("");
@@ -107,8 +105,14 @@ export function WithdrawFlow({
   function sendCode() {
     startTransition(async () => {
       const result = await sendWithdrawalCode();
-      if (result.ok) setCodeSent(true);
-      else setSubmitError("Your session has ended. Log in again.");
+      if (result.ok) {
+        setCodeSent(true);
+        setSubmitError(null);
+      } else {
+        setSubmitError(
+          result.error ?? "We couldn't send the code. Try again in a moment.",
+        );
+      }
     });
   }
 
@@ -387,11 +391,7 @@ export function WithdrawFlow({
 
           <div className="flex flex-col gap-3">
             {codeSent ? (
-              <Field
-                label={`Code sent to ${email}`}
-                name="code"
-                hint={demoCode ? `Demo mode: use code ${demoCode}` : undefined}
-              >
+              <Field label={`Code sent to ${email}`} name="code">
                 <Input
                   name="code"
                   inputMode="numeric"

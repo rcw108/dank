@@ -13,10 +13,7 @@ export type Method = keyof typeof METHODS;
 
 // The same message for a missing field and an empty one.
 const required = (label: string) =>
-  z
-    .string(`Enter the ${label}.`)
-    .trim()
-    .min(1, `Enter the ${label}.`);
+  z.string(`Enter the ${label}.`).trim().min(1, `Enter the ${label}.`);
 
 export const methodSchema = z.discriminatedUnion("method", [
   z.object({

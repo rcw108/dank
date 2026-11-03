@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/proxy";
 
-// Optimistic routing only: real authorization happens in getCurrentUser().
-const SESSION_COOKIE = "dank_session";
 const APP_ROUTES = [
   "/overview",
   "/operations",
@@ -11,18 +10,25 @@ const APP_ROUTES = [
   "/faq",
 ];
 
-export function proxy(request: NextRequest) {
+// Keeps the Supabase session fresh and routes optimistically. Real
+// authorization happens in getCurrentUser() and in each Server Action.
+export async function proxy(request: NextRequest) {
+  const { response, signedIn } = await updateSession(request);
   const { pathname } = request.nextUrl;
-  const hasSession = request.cookies.has(SESSION_COOKIE);
   const isAppRoute = APP_ROUTES.some((route) => pathname.startsWith(route));
 
-  if (isAppRoute && !hasSession) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-  if ((pathname === "/login" || pathname === "/") && hasSession) {
-    return NextResponse.redirect(new URL("/overview", request.url));
-  }
-  return NextResponse.next();
+  const redirectTo = (path: string) => {
+    const redirect = NextResponse.redirect(new URL(path, request.url));
+    // Carry refreshed auth cookies over to the redirect.
+    for (const cookie of response.cookies.getAll())
+      redirect.cookies.set(cookie);
+    return redirect;
+  };
+
+  if (isAppRoute && !signedIn) return redirectTo("/login");
+  if ((pathname === "/login" || pathname === "/") && signedIn)
+    return redirectTo("/overview");
+  return response;
 }
 
 export const config = {

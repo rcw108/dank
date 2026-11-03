@@ -5,3 +5,4 @@ node_modules/
 
 # Local Claude skills, kept out of the repo
 skills/
+__pycache__/

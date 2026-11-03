@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { endSession, readSession } from "@/lib/auth/session";
+import { requireUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/server";
 
 export type RequestState = {
   status: "idle" | "sent" | "error";
@@ -25,9 +26,9 @@ const emailSchema = z.object({
 
 // Each action authorizes itself: Server Actions are reachable by direct POST.
 async function requireSession() {
-  const session = await readSession();
-  if (!session) redirect("/login");
-  return session;
+  const user = await requireUser();
+  if (!user) redirect("/login");
+  return user;
 }
 
 export async function requestProfileChange(
@@ -73,7 +74,7 @@ export async function requestAccountDeletion(): Promise<RequestState> {
 }
 
 export async function signOut() {
-  // Step 3: supabase.auth.signOut()
-  await endSession();
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   redirect("/login");
 }

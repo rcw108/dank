@@ -7,7 +7,7 @@ import { requestCode, verifyCode, type LoginState } from "./actions";
 
 const RESEND_AFTER_SECONDS = 30;
 
-export function LoginForm({ demoCode }: { demoCode: string | null }) {
+export function LoginForm() {
   const [emailState, sendCode, sending] = useActionState(requestCode, {
     step: "email",
   } as LoginState);
@@ -20,7 +20,6 @@ export function LoginForm({ demoCode }: { demoCode: string | null }) {
         initial={emailState}
         resend={sendCode}
         resending={sending}
-        demoCode={demoCode}
       />
     );
   }
@@ -52,12 +51,10 @@ function CodeForm({
   initial,
   resend,
   resending,
-  demoCode,
 }: {
   initial: Extract<LoginState, { step: "code" }>;
   resend: (formData: FormData) => void;
   resending: boolean;
-  demoCode: string | null;
 }) {
   const [state, verify, verifying] = useActionState(
     verifyCode,
@@ -75,12 +72,7 @@ function CodeForm({
       </p>
 
       <form action={verify} className="flex flex-col gap-6" noValidate>
-        <Field
-          label="One-time code"
-          name="code"
-          error={state.error}
-          hint={demoCode ? `Demo mode: use code ${demoCode}` : undefined}
-        >
+        <Field label="One-time code" name="code" error={state.error}>
           <Input
             name="code"
             inputMode="numeric"

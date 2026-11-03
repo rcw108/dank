@@ -63,10 +63,10 @@ Next.js 16.4 сильно отличается от прежних версий.
 
 ### Шаг 3. Вход через Supabase
 
-- [ ] **3.1 Клиенты Supabase:** `@supabase/ssr`, отдельно `server.ts` и `client.ts`, `getUser()` обёрнут в `React.cache`.
-- [ ] **3.2 `proxy.ts`:** обновление сессии и защита маршрутов `/(app)/*`. Сначала читаем `docs/01-app/02-guides/authentication-with-cache-components.md`.
-- [x] **3.3 Экран входа:** email → 6-значный код, повторная отправка через 30 с, выход. Демо-режим: код `123456` (`NEXT_PUBLIC_DEMO_AUTH=false` его отключает). Осталось подключить `signInWithOtp` / `verifyOtp` (места помечены `Step 3:` в [login/actions.ts](web/src/app/login/actions.ts)).
-- [ ] **3.4 Письма Supabase Auth:** шаблон письма с кодом в фирменном стиле, свой SMTP (Resend / Postmark) с адреса домена dank.capital.
+- [x] **3.1 Клиенты Supabase:** `@supabase/ssr` в [web/src/lib/supabase/](web/src/lib/supabase/). Ключи на Vercel приходят из интеграции Supabase ↔ Vercel (проект `jellfqulddvhnrmryzbi`), локально лежат в `web/.env.local`.
+- [x] **3.2 `proxy.ts`:** обновление сессии и защита маршрутов `/(app)/*`. Сначала читаем `docs/01-app/02-guides/authentication-with-cache-components.md`.
+- [x] **3.3 Вход через Supabase:** `signInWithOtp` → 6-значный код → `verifyOtp`. Вывод средств тоже подтверждается кодом из email. Пока синхронизации нет, новые email могут регистрироваться; при запуске синхронизации отключить через `AUTH_ALLOW_NEW_USERS=false`.
+- [ ] **3.4 Письма Supabase Auth (сейчас блокирует вход клиентов):** в шаблонах Magic Link и Confirm signup нужен `{{ .Token }}`. Встроенная почта Supabase отправляет письма только участникам команды проекта, поэтому для инвесторов нужен свой SMTP. шаблон письма с кодом в фирменном стиле, свой SMTP (Resend / Postmark) с адреса домена dank.capital.
   *Готово, когда:* Playwright-тест проходит путь «вход → защищённая страница → выход»; гость редиректится на `/login`.
 
 > Решение: пароли WordPress не переносим (хеши phpass и `$wp$2y$` несовместимы с Supabase). Вход по коду из email работает для всех перенесённых инвесторов сразу. Позже можно добавить пароль или вход по биометрии.
