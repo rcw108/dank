@@ -20,7 +20,19 @@ function todayNow(): string {
   }).format(new Date());
 }
 
-export function Greeting({ name }: { name: string }) {
+/**
+ * Header of the account page: greeting, then the investor's name as the site
+ * prints it ("Mrs. Ana Lopez"), and the company name when there is one.
+ */
+export function Greeting({
+  title,
+  subtitle,
+  company,
+}: {
+  title: string;
+  subtitle?: string | null;
+  company?: string | null;
+}) {
   const greeting = useSyncExternalStore(
     noopSubscribe,
     greetingNow,
@@ -30,10 +42,12 @@ export function Greeting({ name }: { name: string }) {
 
   return (
     <div className="mb-5">
-      <p className="text-sm text-muted">{today || " "}</p>
-      <p className="mt-1 font-display text-2xl font-semibold">
-        {greeting}, {name}
+      <p className="text-sm text-muted">
+        {today ? `${today} · ${greeting}` : " "}
       </p>
+      <h2 className="mt-1 font-display text-2xl font-semibold">{title}</h2>
+      {subtitle ? <p className="text-muted">{subtitle}</p> : null}
+      {company ? <p className="text-sm text-muted">{company}</p> : null}
     </div>
   );
 }

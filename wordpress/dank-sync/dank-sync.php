@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       DANK Sync
- * Description:       Connects dank.capital to the DANK Capital investor app: confirms investors at app login and sends their custom fields to the app whenever they change.
- * Version:           1.0.0
+ * Description:       Connects dank.capital to the DANK Capital investor app: confirms investors at app login and sends them the figures of their account page whenever they change, and once a day as interest accrues.
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            DANK Capital
@@ -20,13 +20,17 @@ if (!defined('ABSPATH')) {
 }
 
 require_once __DIR__ . '/includes/core.php';
+require_once __DIR__ . '/includes/account.php';
 
-const VERSION        = '1.0.0';
+const VERSION        = '1.1.0';
 const OPT_SETTINGS   = 'dank_sync_settings';
 const OPT_SECRET     = 'dank_sync_secret';
 const OPT_LOG        = 'dank_sync_log';
 const LOG_SIZE       = 40;
 const RETRY_HOOK     = 'dank_sync_retry';
+const DAILY_HOOK     = 'dank_sync_daily';
+// The account page counts interest up to "today" in Mexico City time.
+const CALC_TIMEZONE  = 'America/Mexico_City';
 const MAX_ATTEMPTS   = 5;
 const BATCH_SIZE     = 25;
 const DEFAULT_APP    = 'https://dank-nine.vercel.app';
@@ -70,6 +74,7 @@ register_activation_hook(__FILE__, function (): void {
 
 register_deactivation_hook(__FILE__, function (): void {
     wp_clear_scheduled_hook(RETRY_HOOK);
+    wp_clear_scheduled_hook(DAILY_HOOK);
 });
 
 function is_investor(?WP_User $user): bool
@@ -78,7 +83,9 @@ function is_investor(?WP_User $user): bool
 }
 
 /* -------------------------------------------------------------------------
- * Snapshot: everything the app needs about one investor
+ * Snapshot: what the app shows for one investor. Only the fields the
+ * account page displays leave the site; the figures are calculated by the
+ * theme's own account calculation (includes/account.php).
  * ---------------------------------------------------------------------- */
 
 function snapshot(int $user_id): array
@@ -91,33 +98,46 @@ function snapshot(int $user_id): array
             'roles'       => [],
             'is_investor' => false,
             'deleted'     => true,
-            'meta'        => new \stdClass(),
-            'acf'         => new \stdClass(),
             'sent_at'     => time(),
         ];
     }
 
-    $acf = [];
-    if (function_exists('get_fields')) {
-        $fields = get_fields('user_' . $user_id);
-        $acf    = is_array($fields) ? Core\scrub($fields) : [];
+    $snapshot = [
+        'wp_user_id'    => $user_id,
+        'email'         => strtolower((string) $user->user_email),
+        'login'         => (string) $user->user_login,
+        'first_name'    => (string) $user->first_name,
+        'last_name'     => (string) $user->last_name,
+        'display_name'  => (string) $user->display_name,
+        'roles'         => array_values((array) $user->roles),
+        'is_investor'   => is_investor($user),
+        'deleted'       => false,
+        'profile'       => profile($user),
+        'account'       => null,
+        'account_error' => null,
+        'sent_at'       => time(),
+    ];
+    if ($snapshot['is_investor']) {
+        try {
+            $snapshot['account'] = Account\calculate($user);
+        } catch (\Throwable $error) {
+            // The app keeps the last good figures and logs this message.
+            $snapshot['account_error'] = mb_substr($error->getMessage(), 0, 300);
+        }
     }
-    $meta = Core\normalize_meta(get_user_meta($user_id));
+    return $snapshot;
+}
 
+/** Profile fields the account page shows (header, settings). */
+function profile(WP_User $user): array
+{
+    $acf = fn (string $key) => function_exists('get_field') ? get_field($key, 'user_' . $user->ID) : null;
     return [
-        'wp_user_id'   => $user_id,
-        'email'        => strtolower((string) $user->user_email),
-        'login'        => (string) $user->user_login,
-        'first_name'   => (string) $user->first_name,
-        'last_name'    => (string) $user->last_name,
-        'display_name' => (string) $user->display_name,
-        'roles'        => array_values((array) $user->roles),
-        'is_investor'  => is_investor($user),
-        'deleted'      => false,
-        // Empty PHP arrays encode as [], the app expects objects.
-        'meta'         => $meta ?: new \stdClass(),
-        'acf'          => $acf ?: new \stdClass(),
-        'sent_at'      => time(),
+        'appeal'       => (string) get_user_meta($user->ID, 'appeal', true),
+        'phone'        => (string) get_user_meta($user->ID, 'phone_number', true),
+        'company_name' => is_scalar($acf('company_name')) ? trim((string) $acf('company_name')) : '',
+        // Same rule as the page's colour switcher: any value means dark.
+        'theme'        => $acf('color_theme') ? 'dark' : 'light',
     ];
 }
 
@@ -230,8 +250,18 @@ final class Queue
 /** Queue only investors, unless the change may have removed the role. */
 function queue_if_investor(int $user_id, string $reason): void
 {
-    if (is_investor(get_userdata($user_id) ?: null)) {
-        Queue::add($user_id, $reason);
+    if (!is_investor(get_userdata($user_id) ?: null)) {
+        return;
+    }
+    Queue::add($user_id, $reason);
+
+    // The referrer's capital includes a bonus on this investor's deposits.
+    $referrer = (string) get_user_meta($user_id, 'referred_by', true);
+    if ($referrer !== '' && $referrer !== 'none') {
+        $ref = get_user_by('login', $referrer);
+        if ($ref instanceof WP_User && $ref->ID !== $user_id && is_investor($ref)) {
+            Queue::add((int) $ref->ID, 'referral #' . $user_id);
+        }
     }
 }
 
@@ -277,6 +307,19 @@ add_action('delete_user', function ($user_id): void {
         log_event([(int) $user_id], 'deleted', send_to_app(['type' => 'snapshots', 'snapshots' => [$snapshot]]));
     }
 }, 10, 1);
+
+/* -------------------------------------------------------------------------
+ * Daily: interest accrues every day without any field changing, so every
+ * investor is sent again shortly after midnight in Mexico City.
+ * ---------------------------------------------------------------------- */
+
+add_action('init', function (): void {
+    if (!wp_next_scheduled(DAILY_HOOK)) {
+        $next = new \DateTimeImmutable('tomorrow 00:05', new \DateTimeZone(CALC_TIMEZONE));
+        wp_schedule_event($next->getTimestamp(), 'daily', DAILY_HOOK);
+    }
+});
+add_action(DAILY_HOOK, fn () => push_users(investor_ids(), 'daily recalculation'));
 
 /* -------------------------------------------------------------------------
  * REST: the app asks "is this email an investor?" at login
@@ -400,6 +443,15 @@ function render_admin(): void
         <?php if ($notice) : ?>
             <div class="notice notice-info"><p><?php echo esc_html($notice); ?></p></div>
         <?php endif; ?>
+        <?php if ($missing = Account\missing_dependencies()) : ?>
+            <div class="notice notice-error"><p>Account figures can't be calculated: <?php echo esc_html(implode(', ', $missing)); ?> not loaded.
+                The app keeps showing the last figures it received.</p></div>
+        <?php endif; ?>
+        <?php if ($changed = Account\theme_changes()) : ?>
+            <div class="notice notice-warning"><p>The account page calculation in the theme has changed since this plugin was built
+                (<?php echo esc_html(implode(', ', $changed)); ?>). The app may now show different figures from the site:
+                send the updated theme files to the app developer.</p></div>
+        <?php endif; ?>
 
         <h2>1. Connection</h2>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
@@ -432,7 +484,8 @@ function render_admin(): void
         <?php $form('push_all', 'Send all ' . count($ids) . ' investors now', '', 'button button-primary'); ?>
 
         <h2>3. Investor data preview</h2>
-        <p>Exactly what the app receives for one investor. Passwords, tokens and bank details are removed.</p>
+        <p>Exactly what the app receives for one investor: the figures and table of their account page, calculated by the theme,
+            and the profile fields the page shows. No other fields leave the site.</p>
         <form method="get" action="<?php echo esc_url(admin_url('options-general.php')); ?>">
             <input type="hidden" name="page" value="dank-sync">
             <select name="preview">
@@ -446,9 +499,30 @@ function render_admin(): void
             </select>
             <button class="button">Show</button>
         </form>
-        <?php if ($preview) : ?>
+        <?php if ($preview) :
+            $snap = snapshot($preview);
+            $acc  = $snap['account'] ?? null;
+            $usd  = fn ($v) => '$' . number_format((float) $v, 2, '.', ',');
+            ?>
+            <?php if ($acc) : ?>
+                <p>Compare with this investor's account page on the site:</p>
+                <table class="widefat striped" style="max-width:560px;margin-bottom:12px"><tbody>
+                    <?php foreach ([
+                        'Current capital'       => $usd($acc['current_capital']) . ' (' . $acc['as_of'] . ')',
+                        'Net Annualized Return' => $acc['net_annualized_return'],
+                        'Interest Received USD' => $usd($acc['interest_received']),
+                        'Total Invested USD'    => $usd($acc['total_invested']),
+                        'Total Withdraw USD'    => $usd($acc['total_withdrawn']),
+                        'Table rows'            => count($acc['rows']),
+                    ] as $label => $value) : ?>
+                        <tr><th scope="row"><?php echo esc_html($label); ?></th><td><?php echo esc_html((string) $value); ?></td></tr>
+                    <?php endforeach; ?>
+                </tbody></table>
+            <?php elseif (!empty($snap['account_error'])) : ?>
+                <div class="notice notice-error inline"><p>Account calculation failed: <?php echo esc_html($snap['account_error']); ?></p></div>
+            <?php endif; ?>
             <pre style="max-height:420px;overflow:auto;background:#fff;border:1px solid #ccd0d4;padding:12px"><?php
-                echo esc_html(wp_json_encode(snapshot($preview), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                echo esc_html(wp_json_encode($snap, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
             ?></pre>
             <?php $form('push_one', 'Send this investor now', '<input type="hidden" name="user_id" value="' . esc_attr((string) $preview) . '">'); ?>
         <?php endif; ?>

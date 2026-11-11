@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:contract": "tsx --conditions=react-server tests/sync/contract.test.ts",
-    "test:php": "php ../wordpress/dank-sync/tests/core-test.php"
+    "test:php": "php ../wordpress/dank-sync/tools/extract-calc.php ../wordpress/theme-src/hello-theme-dank > /dev/null && php ../wordpress/dank-sync/tests/core-test.php && php ../wordpress/dank-sync/tests/account-test.php"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

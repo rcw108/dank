@@ -25,7 +25,17 @@ export async function applySnapshot(snapshot: Snapshot): Promise<ApplyResult> {
       snapshot.is_investor && !snapshot.deleted && snapshot.email
         ? await store(admin, snapshot)
         : await revoke(admin, snapshot.wp_user_id);
-    await log(admin, snapshot.wp_user_id, "ok", null);
+    // A calculation error on WordPress is stored (profile updated, last
+    // figures kept) but logged, so it can be seen in sync_log.
+    const calcError = snapshot.account_error
+      ? `account calculation: ${snapshot.account_error}`
+      : null;
+    await log(
+      admin,
+      snapshot.wp_user_id,
+      calcError ? "error" : "ok",
+      calcError,
+    );
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

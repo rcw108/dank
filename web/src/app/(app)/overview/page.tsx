@@ -12,7 +12,8 @@ import { MarketStrip } from "@/components/market/market-strip";
 import { LinkButton } from "@/components/ui/button";
 import { Card, SectionTitle } from "@/components/ui/section";
 import { getAccount } from "@/lib/data/account";
-import { formatDate, formatPercent, formatUsd } from "@/lib/format";
+import { formatDate, formatUsd, investorName } from "@/lib/format";
+import type { Referral } from "@/lib/data/types";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -54,10 +55,15 @@ async function Capital() {
   const account = await getAccount();
   if (!account) return <AccountPending />;
   const { profile, summary } = account;
+  const name = investorName(profile);
 
   return (
     <>
-      <Greeting name={profile.firstName} />
+      <Greeting
+        title={name.title}
+        subtitle={name.subtitle}
+        company={profile.companyName}
+      />
 
       {/* The one bold element: capital figure on the site's wireframe texture. */}
       <section
@@ -71,11 +77,14 @@ async function Capital() {
         <span aria-hidden className="mt-4 block h-[3px] w-[34px] bg-accent" />
         <div className="mt-4 flex items-center gap-1 text-sm">
           <span className="font-medium text-accent tabular-nums">
-            {formatPercent(summary.netAnnualizedReturn)}
+            {summary.netAnnualizedReturn || "—"}
           </span>
           <span className="text-muted">net annualized return</span>
           <CompoundInterestInfo />
         </div>
+        {summary.returnNote ? (
+          <p className="mb-1 text-xs text-muted">{summary.returnNote}</p>
+        ) : null}
         <p className="text-xs text-faint">
           As of {formatDate(summary.capitalAsOf)}
         </p>
@@ -96,7 +105,7 @@ async function Capital() {
 async function SummaryAndRecent() {
   const account = await getAccount();
   if (!account) return null;
-  const { summary, operations } = account;
+  const { summary, operations, referral } = account;
   const recent = sortNewestFirst(operations).slice(0, 3);
 
   return (
@@ -135,15 +144,72 @@ async function SummaryAndRecent() {
         >
           Recent operations
         </SectionTitle>
-        <Card className="px-5">
-          <ul className="divide-y divide-line">
-            {recent.map((operation) => (
-              <OperationRow key={operation.id} operation={operation} />
-            ))}
-          </ul>
-        </Card>
+        {recent.length ? (
+          <Card className="px-5">
+            <ul className="divide-y divide-line">
+              {recent.map((operation) => (
+                <OperationRow key={operation.id} operation={operation} />
+              ))}
+            </ul>
+          </Card>
+        ) : (
+          <p className="text-sm text-muted">No operations yet.</p>
+        )}
       </section>
+
+      {referral ? <ReferralBonus referral={referral} /> : null}
     </>
+  );
+}
+
+/** The site's Referral Bonus table (only some accounts have it). */
+function ReferralBonus({ referral }: { referral: Referral }) {
+  return (
+    <section aria-label="Referral bonus" className="mt-8">
+      <SectionTitle>Referral bonus</SectionTitle>
+      <Card className="px-5">
+        {referral.hasReferrals ? (
+          <>
+            <ul className="divide-y divide-line">
+              {referral.investors.map((investor, index) => (
+                <li key={index} className="py-4">
+                  <p className="font-medium">{investor.name || "—"}</p>
+                  <ul className="mt-1 space-y-1 text-sm tabular-nums">
+                    {investor.bonuses.map((bonus, b) => (
+                      <li key={b} className="flex justify-between gap-4">
+                        <span>
+                          {formatUsd(bonus.amount)}
+                          <span className="text-muted">
+                            {" "}
+                            / {formatDate(bonus.date)}
+                          </span>
+                        </span>
+                        {bonus.returned !== null ? (
+                          <span>{formatUsd(bonus.returned)}</span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between gap-4 border-t border-line py-4 font-medium tabular-nums">
+              <span>Total bonus</span>
+              <span className="flex gap-4">
+                <span>{formatUsd(referral.totalBonus)}</span>
+                {referral.totalReturned !== null ? (
+                  <span>{formatUsd(referral.totalReturned)}</span>
+                ) : null}
+              </span>
+            </div>
+          </>
+        ) : (
+          <p className="py-6 text-center text-sm text-muted">
+            You do not have any referrals yet.
+          </p>
+        )}
+      </Card>
+    </section>
   );
 }
 

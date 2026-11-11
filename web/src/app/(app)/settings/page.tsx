@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, SectionTitle } from "@/components/ui/section";
 import { getAccount } from "@/lib/data/account";
+import { investorName } from "@/lib/format";
 import { signOut } from "./actions";
 import {
   DeleteAccount,
@@ -66,6 +67,7 @@ async function Settings() {
   if (!account) return <AccountPending />;
   const { profile } = account;
   const initials = `${profile.firstName[0] ?? ""}${profile.lastName[0] ?? ""}`;
+  const name = investorName(profile);
 
   return (
     <>
@@ -74,9 +76,13 @@ async function Settings() {
           {initials}
         </span>
         <div className="min-w-0">
-          <p className="font-display text-lg font-semibold">
-            {profile.appeal} {profile.firstName} {profile.lastName}
-          </p>
+          <p className="font-display text-lg font-semibold">{name.title}</p>
+          {name.subtitle ? (
+            <p className="text-sm text-muted">{name.subtitle}</p>
+          ) : null}
+          {profile.companyName ? (
+            <p className="text-sm text-muted">{profile.companyName}</p>
+          ) : null}
           <p className="truncate text-sm text-muted">{profile.email}</p>
         </div>
       </div>

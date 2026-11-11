@@ -7,3 +7,9 @@ node_modules/
 skills/
 __pycache__/
 wordpress/dist/
+
+# Client theme source (read-only reference, not ours to publish)
+wordpress/theme-src/
+# Generated from the theme by wordpress/dank-sync/tools/build.sh (theme code stays out of git)
+wordpress/dank-sync/includes/account-calc.php
+wordpress/dank-sync/includes/theme-fingerprint.php

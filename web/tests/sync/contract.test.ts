@@ -8,12 +8,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  toInvestorPayload,
-  toIsoDate,
-  toNumber,
-} from "../../src/lib/sync/mapping";
-import { syncRequestSchema } from "../../src/lib/sync/snapshot";
+import { toInvestorPayload } from "../../src/lib/sync/mapping";
+import { accountSchema, syncRequestSchema } from "../../src/lib/sync/snapshot";
 import { sign, verify } from "../../src/lib/wordpress/signature";
 
 const SECRET = "contract-test-secret";
@@ -80,20 +76,40 @@ for (const [index, request] of requests.entries()) {
 
 const first = syncRequestSchema.parse(JSON.parse(requests[0].body));
 if (first.type === "snapshots") {
+  const snapshot = first.snapshots[0];
   const payload = toInvestorPayload(
-    first.snapshots[0],
+    snapshot,
     "00000000-0000-0000-0000-000000000000",
   );
-  check("maps $89,384.16 → 89384.16", payload.current_capital === 89384.16);
-  check("maps ACF total_invested", payload.total_invested === 50500);
-  check("maps appeal Mrs → Mrs.", payload.appeal === "Mrs.");
+  const account = payload.account;
+  check("account figures arrive calculated", account !== undefined);
+  check(
+    "totals as the page prints them",
+    account?.total_invested === 60000 && account?.total_withdrawn === 5000,
+  );
+  check(
+    "return kept as page text",
+    /^\d+(\.\d+)?%$/.test(account?.net_annualized_return ?? ""),
+  );
+  check(
+    "table rows in page order, terms row included",
+    account?.operations.map((o) => o.type).join() ===
+      "deposit,deposit,withdrawal,deposit,terms",
+  );
+  check(
+    "profile: appeal, company, phone, theme",
+    payload.appeal === "Mrs." &&
+      payload.company_name === "Lopez Holdings" &&
+      payload.phone === "+52 624 555 0100" &&
+      payload.theme === "dark",
+  );
   check(
     "keeps names from WordPress",
     payload.first_name === "Ana" && payload.last_name === "Lopez",
   );
   check(
-    "unknown figures stay empty, not 0",
-    payload.interest_received === null,
+    "diagnostics only in wp_meta",
+    Object.keys(payload.wp_meta).join() === "roles,sent_at,account_error",
   );
 }
 const second = syncRequestSchema.parse(JSON.parse(requests[1].body));
@@ -101,16 +117,37 @@ check(
   "role removal arrives as is_investor: false",
   second.type === "snapshots" && second.snapshots[0].is_investor === false,
 );
+if (second.type === "snapshots") {
+  const payload = toInvestorPayload(
+    { ...second.snapshots[0], account: null, account_error: "boom" },
+    "00000000-0000-0000-0000-000000000000",
+  );
+  check(
+    "no account → figures left untouched",
+    !("account" in payload) && payload.wp_meta.account_error === "boom",
+  );
+}
 
-check(
-  "toNumber handles 1,234.50 / junk",
-  toNumber("1,234.50") === 1234.5 && toNumber("n/a") === null,
-);
-check(
-  "toIsoDate handles ACF 20181107 and 07/11/2018",
-  toIsoDate("20181107") === "2018-11-07" &&
-    toIsoDate("07/11/2018") === "2018-11-07",
-);
+// 3. Real account page figures (needs the theme copy in wordpress/theme-src).
+console.log("— Account page figures —");
+try {
+  execFileSync("php", ["../wordpress/dank-sync/tests/account-test.php"], {
+    env: { ...process.env, DANK_ACCOUNTS_OUT: join(dir, "accounts.json") },
+    stdio: ["ignore", "ignore", "ignore"],
+  });
+  const accounts = JSON.parse(
+    readFileSync(join(dir, "accounts.json"), "utf8"),
+  ) as Record<string, unknown>;
+  for (const [login, account] of Object.entries(accounts)) {
+    const parsed = accountSchema.safeParse(account);
+    check(`${login}: real figures match the app's schema`, parsed.success);
+    if (!parsed.success) console.log(parsed.error.issues.slice(0, 3));
+  }
+} catch {
+  console.log(
+    "skipped (no theme copy, or account-test failed: run it directly)",
+  );
+}
 
 console.log(failures ? `\n${failures} failed` : "\nall passed");
 process.exit(failures ? 1 : 0);
