@@ -1,4 +1,7 @@
+import { Suspense } from "react";
+import { LiveUpdates } from "@/components/app/live-updates";
 import { TabBar } from "@/components/app/tab-bar";
+import { getCurrentUser } from "@/lib/auth/user";
 
 // Static app chrome: prerendered once, so tab switches feel instant.
 // Account data streams into each page behind its own Suspense boundary.
@@ -9,6 +12,15 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         {children}
       </div>
       <TabBar />
+      {/* Reads the session, so it streams in without holding the chrome. */}
+      <Suspense fallback={null}>
+        <Live />
+      </Suspense>
     </>
   );
+}
+
+async function Live() {
+  const user = await getCurrentUser();
+  return <LiveUpdates userId={user.id} />;
 }

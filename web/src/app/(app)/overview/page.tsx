@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FileText } from "lucide-react";
+import { AccountPending } from "@/components/app/account-pending";
 import { CompoundInterestInfo } from "@/components/app/compound-interest";
 import { Greeting } from "@/components/app/greeting";
 import { LegalFooter } from "@/components/app/legal-footer";
@@ -50,7 +51,9 @@ export default function OverviewPage() {
 }
 
 async function Capital() {
-  const { profile, summary } = await getAccount();
+  const account = await getAccount();
+  if (!account) return <AccountPending />;
+  const { profile, summary } = account;
 
   return (
     <>
@@ -91,7 +94,9 @@ async function Capital() {
 }
 
 async function SummaryAndRecent() {
-  const { summary, operations } = await getAccount();
+  const account = await getAccount();
+  if (!account) return null;
+  const { summary, operations } = account;
   const recent = sortNewestFirst(operations).slice(0, 3);
 
   return (

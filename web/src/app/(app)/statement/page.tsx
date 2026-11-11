@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Suspense } from "react";
 import logo from "../../../../public/brand/logo.png";
+import { AccountPending } from "@/components/app/account-pending";
 import { PageHeader } from "@/components/app/page-header";
 import { sortNewestFirst } from "@/components/app/operation-row";
 import { getAccount } from "@/lib/data/account";
@@ -32,7 +33,9 @@ export default function StatementPage() {
 }
 
 async function Statement() {
-  const { profile, summary, operations } = await getAccount();
+  const account = await getAccount();
+  if (!account) return <AccountPending />;
+  const { profile, summary, operations } = account;
   const rows = sortNewestFirst(operations);
 
   return (

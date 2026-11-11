@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AccountPending } from "@/components/app/account-pending";
 import { PageHeader } from "@/components/app/page-header";
 import { getAccount } from "@/lib/data/account";
 import { WithdrawFlow } from "./withdraw-flow";
@@ -25,7 +26,9 @@ export default function WithdrawPage() {
 }
 
 async function Withdraw() {
-  const { summary, rules, profile } = await getAccount();
+  const account = await getAccount();
+  if (!account) return <AccountPending />;
+  const { summary, rules, profile } = account;
   // Pass only what the form needs to the client.
   return (
     <WithdrawFlow

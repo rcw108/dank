@@ -49,7 +49,15 @@ export async function submitWithdrawal(
   }
   const request = parsed.data;
 
-  const { summary, rules } = await getAccount();
+  const account = await getAccount();
+  if (!account) {
+    return {
+      ok: false,
+      error:
+        "Your account hasn't been set up yet. Contact DANK Capital support.",
+    };
+  }
+  const { summary, rules } = account;
   if (summary.currentCapital <= rules.minimumBalance) {
     return {
       ok: false,

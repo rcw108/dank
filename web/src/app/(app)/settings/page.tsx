@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
+import { AccountPending } from "@/components/app/account-pending";
 import { LegalFooter } from "@/components/app/legal-footer";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,9 @@ export default function SettingsPage() {
 }
 
 async function Settings() {
-  const { profile } = await getAccount();
+  const account = await getAccount();
+  if (!account) return <AccountPending />;
+  const { profile } = account;
   const initials = `${profile.firstName[0] ?? ""}${profile.lastName[0] ?? ""}`;
 
   return (

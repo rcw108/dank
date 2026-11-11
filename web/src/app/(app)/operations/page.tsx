@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FileText } from "lucide-react";
+import { AccountPending } from "@/components/app/account-pending";
 import { sortNewestFirst } from "@/components/app/operation-row";
 import { PageHeader } from "@/components/app/page-header";
 import { getAccount } from "@/lib/data/account";
@@ -40,7 +41,9 @@ export default function OperationsPage() {
 }
 
 async function Operations() {
-  const { operations, summary } = await getAccount();
+  const account = await getAccount();
+  if (!account) return <AccountPending />;
+  const { operations, summary } = account;
 
   return (
     <>

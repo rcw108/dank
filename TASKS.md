@@ -51,6 +51,23 @@ Next.js 16.4 сильно отличается от прежних версий.
 - [x] **1.5 Реконструкция кабинета:** кабинет снят под тестовым инвестором, результат в [docs/dev/account-map.md](docs/dev/account-map.md). Разделы: шапка с капиталом, таблица операций (депозиты и выводы), сводка из 5 показателей, вывод средств (3 шага), настройки профиля и безопасности, тёмная и светлая тема.
 - [ ] **1.6 Хранение данных в WP (блокер для шагов 2 и 4):** узнать meta_key операций и как считается Present Capital (вводит админ или формула в теме). Нужен доступ к админке или к коду темы `hello-theme-dank`.
 
+### Живые данные из WordPress (с 11 ноября 2026, по шагам)
+
+Цель: все цифры в приложении приходят из custom fields WordPress, а изменения в WP появляются в открытом приложении без перезагрузки.
+
+```
+WP: сохранение custom fields ─► плагин dank-sync ─► POST /api/wp-sync (Vercel, HMAC)
+   ─► supabase.sync_investor() ─► таблицы investors + operations
+   ─► Supabase Realtime ─► приложение: router.refresh() + «Account updated»
+```
+
+- [x] **Ж1. Таблицы, доступ и живое обновление.** Миграция [supabase/migrations/20261111000000_investor_accounts.sql](supabase/migrations/20261111000000_investor_accounts.sql): `investors`, `operations`, `sync_log`, RLS (инвестор видит только свои строки), функция `sync_investor()` (атомарный снимок, вызывает только service role), триггеры для Realtime. Проверено в PGlite. Приложение читает Supabase ([account.ts](web/src/lib/data/account.ts)) и слушает изменения ([live-updates.tsx](web/src/components/app/live-updates.tsx)).
+  *Осталось:* применить SQL в Supabase и проверить живое обновление правкой строки в Table Editor.
+- [ ] **Ж2. Приёмник `/api/wp-sync`** на Vercel: проверка подписи HMAC, создание пользователя Supabase Auth по email, преобразование custom fields в поля таблиц, вызов `sync_investor()`, запись в `sync_log`.
+- [ ] **Ж3. Плагин WordPress `dank-sync`:** хуки на изменение user meta и ACF, отправка снимка, страница настроек (адрес, секрет, «Отправить сейчас», просмотр meta-ключей), WP-CLI `wp dank-sync push --all`.
+- [ ] **Ж4. Сопоставление полей:** по сырым данным в `investors.wp_meta` связать meta-ключи с колонками и операциями. Если Present Capital считает тема, перенести расчёт в плагин.
+- [ ] **Ж5. Перенос всех инвесторов и проверка на живых данных:** первичный `push --all`, сверка с кабинетом на сайте, `AUTH_ALLOW_NEW_USERS=false`.
+
 ### Шаг 2. Supabase: база и типы
 
 - [ ] **2.1 Supabase CLI:** `supabase init` в корне, `supabase link` к проекту, ключи в `web/.env.local`, шаблон `web/.env.example` в git.
