@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:contract": "tsx --conditions=react-server tests/sync/contract.test.ts",
+    "test:php": "php ../wordpress/dank-sync/tests/core-test.php"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -27,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

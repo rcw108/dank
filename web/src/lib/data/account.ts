@@ -71,7 +71,9 @@ export const getAccount = cache(async (): Promise<Account | null> => {
   }
 
   const row = investorResult.data;
-  if (!row) return null;
+  // No row yet, or WordPress fields not mapped yet: show "being set up"
+  // rather than $0.00.
+  if (!row || row.current_capital === null) return null;
 
   const num = (value: number | null) => Number(value ?? 0);
 

@@ -31,8 +31,9 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// API routes are skipped: the WordPress webhook carries no session.
 export const config = {
   matcher: [
-    "/((?!_next/|brand/|favicon.ico|.*\\.(?:png|jpg|svg|ico|webmanifest)$).*)",
+    "/((?!_next/|api/|brand/|favicon.ico|.*\\.(?:png|jpg|svg|ico|webmanifest)$).*)",
   ],
 };

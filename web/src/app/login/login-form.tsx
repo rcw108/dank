@@ -66,8 +66,9 @@ function CodeForm({
   return (
     <div className="flex flex-col gap-6">
       <p className="text-muted">
-        We sent a code to <span className="font-medium text-fg">{email}</span>.
-        It expires in 10 minutes.
+        If <span className="font-medium text-fg">{email}</span> belongs to a
+        DANK Capital investor account, we&apos;ve sent a login code to it. The
+        code expires in 10 minutes.
       </p>
 
       <form action={verify} className="flex flex-col gap-6" noValidate>

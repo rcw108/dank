@@ -63,8 +63,10 @@ WP: сохранение custom fields ─► плагин dank-sync ─► POST
 
 - [x] **Ж1. Таблицы, доступ и живое обновление.** Миграция [supabase/migrations/20261111000000_investor_accounts.sql](supabase/migrations/20261111000000_investor_accounts.sql): `investors`, `operations`, `sync_log`, RLS (инвестор видит только свои строки), функция `sync_investor()` (атомарный снимок, вызывает только service role), триггеры для Realtime. Проверено в PGlite. Приложение читает Supabase ([account.ts](web/src/lib/data/account.ts)) и слушает изменения ([live-updates.tsx](web/src/components/app/live-updates.tsx)).
   *Осталось:* применить SQL в Supabase и проверить живое обновление правкой строки в Table Editor.
-- [ ] **Ж2. Приёмник `/api/wp-sync`** на Vercel: проверка подписи HMAC, создание пользователя Supabase Auth по email, преобразование custom fields в поля таблиц, вызов `sync_investor()`, запись в `sync_log`.
-- [ ] **Ж3. Плагин WordPress `dank-sync`:** хуки на изменение user meta и ACF, отправка снимка, страница настроек (адрес, секрет, «Отправить сейчас», просмотр meta-ключей), WP-CLI `wp dank-sync push --all`.
+- [x] **Ж2. Приёмник `/api/wp-sync`** ([route.ts](web/src/app/api/wp-sync/route.ts), [apply.ts](web/src/lib/sync/apply.ts)): проверка подписи HMAC, создание пользователя Supabase Auth, сохранение снимка через `sync_investor()`, `sync_log`. Если роль снята или пользователь удалён, доступ отзывается (строка удаляется, вход блокируется).
+- [x] **Ж3. Плагин WordPress [dank-sync](wordpress/dank-sync/README.md):** хуки на изменение user meta, ACF и роли, повторы при сбое, страница Настройки → DANK Sync (секрет, проверка связи, отправка всех, просмотр данных инвестора, журнал), WP-CLI. Тесты: `npm run test:php`, `npm run test:contract`.
+- [x] **Ж3а. Вход только для инвесторов:** при запросе кода приложение спрашивает WordPress (`/wp-json/dank-sync/v1/check`) о роли `investor`; код отправляется только инвесторам. Ответ формы одинаковый для всех, а минимальное время ответа скрывает, кто инвестор. Если сайт недоступен, проверка идёт по уже синхронизированным инвесторам.
+  *Осталось (вам):* применить миграцию [20261111100000_login_check.sql](supabase/migrations/20261111100000_login_check.sql), установить плагин, задать `WP_SYNC_SECRET` в Vercel.
 - [ ] **Ж4. Сопоставление полей:** по сырым данным в `investors.wp_meta` связать meta-ключи с колонками и операциями. Если Present Capital считает тема, перенести расчёт в плагин.
 - [ ] **Ж5. Перенос всех инвесторов и проверка на живых данных:** первичный `push --all`, сверка с кабинетом на сайте, `AUTH_ALLOW_NEW_USERS=false`.
 
@@ -82,7 +84,7 @@ WP: сохранение custom fields ─► плагин dank-sync ─► POST
 
 - [x] **3.1 Клиенты Supabase:** `@supabase/ssr` в [web/src/lib/supabase/](web/src/lib/supabase/). Ключи на Vercel приходят из интеграции Supabase ↔ Vercel (проект `jellfqulddvhnrmryzbi`), локально лежат в `web/.env.local`.
 - [x] **3.2 `proxy.ts`:** обновление сессии и защита маршрутов `/(app)/*`. Сначала читаем `docs/01-app/02-guides/authentication-with-cache-components.md`.
-- [x] **3.3 Вход через Supabase:** `signInWithOtp` → 6-значный код → `verifyOtp`. Вывод средств тоже подтверждается кодом из email. Пока синхронизации нет, новые email могут регистрироваться; при запуске синхронизации отключить через `AUTH_ALLOW_NEW_USERS=false`.
+- [x] **3.3 Вход через Supabase:** `signInWithOtp` → код из письма → `verifyOtp`. Вывод средств тоже подтверждается кодом из email. Новые пользователи создаются только синхронизацией с WordPress.
 - [ ] **3.4 Письма Supabase Auth (сейчас блокирует вход клиентов):** в шаблонах Magic Link и Confirm signup нужен `{{ .Token }}`. Встроенная почта Supabase отправляет письма только участникам команды проекта, поэтому для инвесторов нужен свой SMTP. шаблон письма с кодом в фирменном стиле, свой SMTP (Resend / Postmark) с адреса домена dank.capital.
   *Готово, когда:* Playwright-тест проходит путь «вход → защищённая страница → выход»; гость редиректится на `/login`.
 
