@@ -8,7 +8,7 @@
  * never raw hex, so the light theme below is a pure token swap.
  *
  * Dark (default) = the site: navy #0D232B, ink cards #141A27, teal #45C7AD,
- * crest gold #DAAF64. #FF3C00 is the site account's colour for withdrawals.
+ * logo gold #DAAF64. #FF3C00 is the site account's colour for withdrawals.
  */
 @theme {
   --color-bg: #0d232b;

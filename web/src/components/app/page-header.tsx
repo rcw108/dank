@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import logo from "../../../public/brand/logo.png";
 
-/** Top bar of every signed-in screen: crest-logo, title, optional action. */
+/** Top bar of every signed-in screen: logo, title, optional action. */
 export function PageHeader({
   title,
   action,

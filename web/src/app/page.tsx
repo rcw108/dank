@@ -1,5 +1,5 @@
 import Image from "next/image";
-import crest from "../../public/brand/crest.png";
+import logo from "../../public/brand/logo.png";
 import { BrandBackdrop } from "@/components/app/brand-backdrop";
 import { LinkButton } from "@/components/ui/button";
 
@@ -10,10 +10,10 @@ export default function Welcome() {
       <BrandBackdrop />
 
       <Image
-        src={crest}
-        alt="DANK Capital crest"
-        width={128}
-        height={128}
+        src={logo}
+        alt="DANK Capital"
+        width={160}
+        height={160}
         priority
         className="mb-8 animate-rise drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
       />

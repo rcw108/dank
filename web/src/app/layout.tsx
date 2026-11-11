@@ -28,6 +28,14 @@ export const metadata: Metadata = {
     title: "DANK Capital",
     statusBarStyle: "black-translucent",
   },
+  // Account figures must never turn into tappable phone numbers on iOS.
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: {
+    type: "website",
+    siteName: "DANK Capital",
+    title: "DANK Capital",
+    description: "Your DANK Capital investor account on your phone.",
+  },
 };
 
 export const viewport: Viewport = {

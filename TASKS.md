@@ -117,7 +117,7 @@ WP: сохранение custom fields ─► плагин dank-sync ─► POST
 
 ### Шаг 6. PWA
 
-- [ ] **6.1 `app/manifest.ts`:** имя, иконки 192/512/maskable из логотипа, `display: standalone`, `theme_color #0D232B`, splash-экраны iOS.
+- [x] **6.1 Иконки и манифест (11 ноября):** все иконки из логотипа (`web/scripts/make-icons.mjs`): favicon 16/32/48, `icon.png`, `apple-icon.png` для iOS, 192/512 и maskable для Android, превью ссылок 1200×630. `manifest.ts`: `display: standalone`, `theme_color` и фон #0D232B. Chrome не видит препятствий для установки. Логотип заменил герб на приветственном экране. Осталось: splash-экраны iOS (сделаем в Capacitor на этапе 2).
 - [ ] **6.2 Service Worker на Serwist:** precache оболочки, офлайн-страница, кэш данных TanStack Query в IndexedDB (с версией схемы), баннер «You're offline. Showing data from <time>.» Перед этим проверить совместимость Serwist с Turbopack в Next 16.4.
 - [ ] **6.3 Подсказка установки:** Android — `beforeinstallprompt`, iOS — инструкция «Share → Add to Home Screen».
 - [ ] **6.4 Проектные скилы через skill-creator:** `dank-brand` и `wp-sync-field`, с eval.
