@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "DANK Capital",
     short_name: "DANK Capital",
     description:
-      "Your DANK Capital investor account: capital, returns, operations and withdrawals.",
+      "Your DANK Capital investor account: capital, returns and operations.",
     start_url: "/",
     scope: "/",
     display: "standalone",

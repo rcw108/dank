@@ -2,6 +2,7 @@ import Image from "next/image";
 import logo from "../../public/brand/logo.png";
 import { BrandBackdrop } from "@/components/app/brand-backdrop";
 import { LinkButton } from "@/components/ui/button";
+import { features } from "@/lib/features";
 
 // Entry screen for signed-out visitors (signed-in ones are sent to /overview).
 export default function Welcome() {
@@ -26,8 +27,9 @@ export default function Welcome() {
         className="mx-auto mt-4 block h-[3px] w-[34px] bg-accent"
       />
       <p className="mt-5 max-w-sm text-muted">
-        Your capital, returns and withdrawal requests — the same account you use
-        on dank.capital.
+        Your capital, returns{" "}
+        {features.withdrawals ? "and withdrawal requests" : "and operations"} —
+        the same account you use on dank.capital.
       </p>
 
       <LinkButton

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { features } from "@/lib/features";
 import { updateSession } from "@/lib/supabase/proxy";
 
 const APP_ROUTES = [
@@ -26,6 +27,9 @@ export async function proxy(request: NextRequest) {
   };
 
   if (isAppRoute && !signedIn) return redirectTo("/login");
+  // Hidden feature: old links and bookmarks land on the overview.
+  if (pathname.startsWith("/withdraw") && !features.withdrawals)
+    return redirectTo("/overview");
   if ((pathname === "/login" || pathname === "/") && signedIn)
     return redirectTo("/overview");
   return response;

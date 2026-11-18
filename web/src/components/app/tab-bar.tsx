@@ -14,8 +14,10 @@ const TABS = [
   { href: "/settings", label: "Account", Icon: UserRound },
 ] as const;
 
-export function TabBar() {
+/** `withdrawals`: show the Withdraw tab (see lib/features.ts). */
+export function TabBar({ withdrawals }: { withdrawals: boolean }) {
   const pathname = usePathname();
+  const tabs = TABS.filter((tab) => withdrawals || tab.href !== "/withdraw");
 
   return (
     <nav
@@ -23,8 +25,10 @@ export function TabBar() {
       data-print-hide
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-scrim pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
     >
-      <ul className="mx-auto grid max-w-xl grid-cols-4">
-        {TABS.map(({ href, label, Icon }) => {
+      <ul
+        className={`mx-auto grid max-w-xl ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}
+      >
+        {tabs.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
           return (
             <li key={href}>

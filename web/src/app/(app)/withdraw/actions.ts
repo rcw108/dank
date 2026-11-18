@@ -4,7 +4,11 @@ import { randomInt } from "node:crypto";
 import { requireUser } from "@/lib/auth/user";
 import { getAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
+import { features } from "@/lib/features";
 import { withdrawalSchema } from "@/lib/withdrawal";
+
+const UNAVAILABLE =
+  "Withdrawal requests from the app are coming soon. Please use dank.capital for now.";
 
 export type WithdrawalResult =
   { ok: true; reference: string } | { ok: false; error: string };
@@ -14,6 +18,7 @@ export async function sendWithdrawalCode(): Promise<{
   ok: boolean;
   error?: string;
 }> {
+  if (!features.withdrawals) return { ok: false, error: UNAVAILABLE };
   const user = await requireUser();
   if (!user)
     return { ok: false, error: "Your session has ended. Log in again." };
@@ -38,6 +43,8 @@ export async function sendWithdrawalCode(): Promise<{
 export async function submitWithdrawal(
   input: unknown,
 ): Promise<WithdrawalResult> {
+  // Hidden until requests reach the site's form: never report a fake success.
+  if (!features.withdrawals) return { ok: false, error: UNAVAILABLE };
   // Server Actions are public endpoints: authorize inside the action itself.
   const user = await requireUser();
   if (!user)

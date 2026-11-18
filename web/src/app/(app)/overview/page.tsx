@@ -12,6 +12,7 @@ import { MarketStrip } from "@/components/market/market-strip";
 import { LinkButton } from "@/components/ui/button";
 import { Card, SectionTitle } from "@/components/ui/section";
 import { getAccount } from "@/lib/data/account";
+import { features } from "@/lib/features";
 import { formatDate, formatUsd, investorName } from "@/lib/format";
 import type { Referral } from "@/lib/data/types";
 
@@ -89,10 +90,14 @@ async function Capital() {
           As of {formatDate(summary.capitalAsOf)}
         </p>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <LinkButton href="/withdraw" className="uppercase">
-            Withdraw
-          </LinkButton>
+        <div
+          className={`mt-6 grid gap-3 ${features.withdrawals ? "grid-cols-2" : "grid-cols-1"}`}
+        >
+          {features.withdrawals ? (
+            <LinkButton href="/withdraw" className="uppercase">
+              Withdraw
+            </LinkButton>
+          ) : null}
           <LinkButton href="/statement" variant="outline" className="uppercase">
             Statement
           </LinkButton>
